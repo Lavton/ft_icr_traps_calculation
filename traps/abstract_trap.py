@@ -41,7 +41,7 @@ class TrappedVoltages(Voltages):
 class AbstractTrap(metaclass=ABCMeta):
 
     name = "abstract"
-    _voltages = {1: 0, 2: 1, 3: 0}
+    _voltages = Voltages
 
     def _create_geometry(
             self, cell_border: Coords[float],
@@ -155,7 +155,7 @@ class AbstractTrap(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_electrode_type(self, coords: CoordsVar):
+    def get_electrode_type(self, coords: CoordsVar) -> int:
         pass
 
     def put_point(self, indexes, coords):
@@ -317,15 +317,16 @@ class AbstractTrap(metaclass=ABCMeta):
         pass
 
 
-
 class AbstractPenningTrap(AbstractTrap, metaclass=ABCMeta):
+    _voltages = TrappedVoltages
+
+    # @abstractmethod
+    def get_trap_electrode_type(self, coords: CoordsVar) -> Voltages:
+        return TrappedVoltages.TRAPPING
+        # pass
 
     @abstractmethod
-    def get_trap_electrode_type(self, coords: CoordsVar):
-        pass
-
-    @abstractmethod
-    def calculate_nontrap_electrode_type(self, coords: CoordsVar) -> int:
+    def calculate_nontrap_electrode_type(self, coords: CoordsVar) -> Voltages:
         pass
 
     @abstractmethod
@@ -339,17 +340,26 @@ class AbstractPenningTrap(AbstractTrap, metaclass=ABCMeta):
     def is_electrode(self, coords: CoordsVar):
         return self.is_trapped_electrode(coords) or self.is_other_electrode(coords)
 
-    def get_electrode_type(self, coords: CoordsVar):
+    def get_electrode_type(self, coords: CoordsVar) -> int:
         if self.is_trapped_electrode(coords):
-            return self.get_trap_electrode_type(coords)
-        return self.calculate_nontrap_electrode_type(coords)
+            e_type = self.get_trap_electrode_type(coords)
+        else:
+            e_type = self.calculate_nontrap_electrode_type(coords)
+        return self.voltages_to_int(e_type)
+
+    def voltages_to_int(self, e_type: Voltages) -> int:
+        for i, t in enumerate(self._voltages):
+            if t == e_type:
+                return i + 1
 
     def put_point(self, indexes, coords):
         i, j, k = indexes
         if self.is_trapped_electrode(coords):
-            self.unrefined_pa.point(i, j, k, 1, self.get_trap_electrode_type(coords))
+            e_type = self.get_trap_electrode_type(coords)
+            self.unrefined_pa.point(i, j, k, 1, self.voltages_to_int(e_type))
         elif self.is_other_electrode(coords):
-            self.unrefined_pa.point(i, j, k, 1, self.calculate_nontrap_electrode_type(coords))
+            e_type = self.calculate_nontrap_electrode_type(coords)
+            self.unrefined_pa.point(i, j, k, 1, self.voltages_to_int(e_type))
 
 
 class AbstractPenningTrapWithSimpleElectrodes(AbstractPenningTrap, metaclass=ABCMeta):

@@ -5,12 +5,12 @@ from SIMION.PA import PA
 if __name__ == "__main__":
     # trap = dump_trap.DumpTrap(Coords(1, 1, 1))
     # trap = cubic_trap.CubicTrap(20*10**-3)
-    trap = cylindrical_trap.CylindricalTrap(a=20*10**-3, z0=20*10**-3)
-    # trap = dhc_trap.DHCTrap(
-    #     a=30*10**-3,
-    #     z0=2*30*10**-3,
-    #     beta=0.9
-    # )
+    # trap = cylindrical_trap.CylindricalTrap(a=20*10**-3, z0=40*10**-3)
+    trap = dhc_trap.DHCTrap(
+        a=30*10**-3,
+        z0=2*30*10**-3,
+        beta=0.9
+    )
     trap.generate_cell()
     # trap.refine_cell()
     # trap.adjust_cell()

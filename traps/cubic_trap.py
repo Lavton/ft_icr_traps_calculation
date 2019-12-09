@@ -1,10 +1,9 @@
-from traps.abstract_trap import AbstractPenningTrapWithSimpleElectrodes, Coords, CoordsVar
+from traps.abstract_trap import AbstractPenningTrapWithSimpleElectrodes, Coords, CoordsVar, Voltages, TrappedVoltages
 
 
 class CubicTrap(AbstractPenningTrapWithSimpleElectrodes):
 
     name = "Cubic"
-    _voltages = {1: 0, 2: 1, 3: 0}
 
     def _is_trapped_electrode_simple(self, coords: CoordsVar):
         x, y, z = coords
@@ -14,14 +13,11 @@ class CubicTrap(AbstractPenningTrapWithSimpleElectrodes):
         x, y, z = coords
         return x >= self.size or y >= self.size
 
-    def get_trap_electrode_type(self, coords: CoordsVar):
-        return 2
-
-    def calculate_nontrap_electrode_type(self, coords: CoordsVar) -> int:
+    def calculate_nontrap_electrode_type(self, coords: CoordsVar) -> TrappedVoltages:
         x, y, z = coords
         if x >= self.size:
-            return 1
-        return 3
+            return TrappedVoltages.DETECTION
+        return TrappedVoltages.EXCITATION
 
     def __init__(self, size: float, cell_name="test", *, pts=150
                  ):

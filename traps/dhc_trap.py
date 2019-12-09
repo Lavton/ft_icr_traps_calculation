@@ -1,11 +1,11 @@
-from traps.abstract_trap import AbstractPenningTrapWithSimpleElectrodes, Coords, CoordsVar
+from traps.abstract_trap import AbstractPenningTrapWithSimpleElectrodes, Coords, CoordsVar, TrappedVoltages
+from traps.cylindrical_trap import CylindricalTrap
 import numpy as np
 
 
-class DHCTrap(AbstractPenningTrapWithSimpleElectrodes):
+class DHCTrap(CylindricalTrap):
 
     name = "DHC"
-    _voltages = {1: 0, 2: 1}
 
     def _is_trapped_electrode_simple(self, coords: CoordsVar):
         """
@@ -21,25 +21,6 @@ class DHCTrap(AbstractPenningTrapWithSimpleElectrodes):
         else:
             return False
 
-    def _is_other_electrode_simple(self, coords: CoordsVar):
-        """
-        Check, if the point (x,y,z) is inside of any electrode
-        """
-        r, theta, z = coords
-
-        # if self._is_point_inside_the_end_electrode(x, y, z):
-        # if we are in the end electrode - it is electrode
-        # return True
-
-        if r**2 < self.cell_border.x ** 2:
-            # if we are inside the cell, it is not an electrode
-            return False
-        else:
-            return True
-
-    def get_trap_electrode_type(self, coords: CoordsVar):
-        return 2
-
     def calculate_nontrap_electrode_type(self, coords: CoordsVar) -> int:
         r, theta, z = coords
         return self._get_electrode_type(theta, z)
@@ -48,7 +29,7 @@ class DHCTrap(AbstractPenningTrapWithSimpleElectrodes):
         self.N = N
         self.beta = beta
         self.alpha_0 = beta*np.pi/N
-        super().__init__(Coords(x=a, y=a, z=z0), cell_name=cell_name, pts=pts, cylindrical_geometry=True)
+        super().__init__(z0=z0, a=a, cell_name=cell_name, pts=pts)
 
     def _get_phi_arias(self, n, z):
         """get the area, where there is voltage"""
@@ -65,8 +46,12 @@ class DHCTrap(AbstractPenningTrapWithSimpleElectrodes):
         for n in range(N):
             l, r = self._get_phi_arias(n, z)
             if l <= theta <= r:
-                return 2
+                return TrappedVoltages.TRAPPING
             if l <= theta+2*np.pi <= r:
-                return 2
-        return 1
+                return TrappedVoltages.TRAPPING
+        if 0 <= theta <= np.pi/4:
+            return TrappedVoltages.EXCITATION
+        # if np.pi <= theta <= np.pi*3/2:
+        #     return TrappedVoltages.EXCITATION
+        return TrappedVoltages.DETECTION
 
