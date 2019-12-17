@@ -5,13 +5,13 @@ from dataclasses import dataclass
 import typing
 import numpy as np
 from math import ceil
-from tqdm import tqdm as tqdm
+from tqdm import tqdm_notebook as tqdm
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from SIMION.PA import PA
 from enum import Enum, auto
 T = typing.TypeVar('T')
-
+AVERAGED_AREA_LENGTH = 10 * 10 ** -3
 
 @dataclass
 class Coords(typing.Generic[T]):
@@ -24,18 +24,33 @@ CoordsVar = typing.Tuple[float, float, float]  # (x, y, z) или (r, theta, z)
 
 
 class Voltages(Enum):
-    pass
+    def to_adust(self) -> int:
+        pass
 
 
 class SimpleVoltages(Voltages):
-    EXCITATION = auto()
-    DETECTION = auto()
+    EXCITATION = 1
+    DETECTION = 2
+
+    def to_adjust(self) -> int:
+        if self == self.DETECTION:
+            return 0
+        if self == self.EXCITATION:
+            return 1
 
 
 class TrappedVoltages(Voltages):
-    EXCITATION = auto()
-    DETECTION = auto()
-    TRAPPING = auto()
+    EXCITATION = 1
+    DETECTION = 2
+    TRAPPING = 3
+
+    def to_adjust(self) -> int:
+        if self == self.DETECTION:
+            return 0
+        if self == self.EXCITATION:
+            return 0
+        if self == self.TRAPPING:
+            return 1
 
 
 class AbstractTrap(metaclass=ABCMeta):
@@ -51,10 +66,11 @@ class AbstractTrap(metaclass=ABCMeta):
         # первое, что надо сделать: определить точные параметры модели.
         # по умолчанию они немного (в 1.3 раза) больше размера ловушки
         # по после этого надо их слегка поправить так, чтобы в размер укладывалось целое число шагов сетки
+        bigger = 1.5
         model_border = model_border if model_border else Coords[float](
-            x=1.3 * cell_border.x,
-            y=1.3 * cell_border.y,
-            z=1.3 * cell_border.z
+            x=bigger * cell_border.x,
+            y=bigger * cell_border.y,
+            z=bigger * cell_border.z
         )
         self.pts = pts
         gridstepmm = model_border.x / pts
@@ -91,17 +107,8 @@ class AbstractTrap(metaclass=ABCMeta):
                     self.thetas[j, i] = np.arctan2(self.grid.y[j], self.grid.x[i])
                     self.rs[j, i] = np.sqrt(self.grid.y[j]**2 + self.grid.x[i]**2)
 
-    def __init__(
-            self, cell_border: Coords[float], cell_name="test", *,
-            pts=150, model_border: typing.Optional[Coords[float]] =None,
-            cylindrical_geometry=False
-    ):
-        self.cell_name = cell_name
-        self.cylindrical_geometry = cylindrical_geometry
-        self._standard_direction = {0, 1, 2} if not cylindrical_geometry else {0, 2}
-        self._create_geometry(cell_border,
-                              pts=pts, model_border=model_border, cylindrical_geometry=cylindrical_geometry)
-        self.unrefined_pa = PA(
+    def create_dump_pa(self) -> PA:
+        return PA(
             symmetry='planar',  # symmetry type: 'planar' or 'cylindrical'
             max_voltage=100000,  # this affects the interpretation
             #   of point values
@@ -118,33 +125,46 @@ class AbstractTrap(metaclass=ABCMeta):
             fast_adjustable=0,  # Boolean indicating whether is fast-adj.
             enable_points=1  # Enable data points.
         )
+
+    def __init__(
+            self, cell_border: Coords[float], cell_name="test", *,
+            pts=150, model_border: typing.Optional[Coords[float]] =None,
+            cylindrical_geometry=False
+    ):
+        self.cell_name = cell_name
+        self.cylindrical_geometry = cylindrical_geometry
+        self._standard_direction = {0, 1, 2} if not cylindrical_geometry else {0, 2}
+        self._create_geometry(cell_border,
+                              pts=pts, model_border=model_border, cylindrical_geometry=cylindrical_geometry)
+        self.unrefined_pa = self.create_dump_pa()
         self.pa = self.unrefined_pa
 
     def _gen_coords_for_test(self, coords: CoordsVar, directions: typing.Set, width):
         directions = list(directions)
         for i, direction in enumerate(directions):
             new_coords = list(coords)
-            new_coords[direction] *= (1-width)
+            new_coords[direction] -= (width)
             yield tuple(new_coords)
             for j in range(i+1, len(directions)):
                 new_coords = list(coords)
-                new_coords[direction] *= (1 - width)
-                new_coords[directions[j]] *= (1-width)
+                new_coords[direction] -= (width)
+                new_coords[directions[j]] -= (width)
                 yield tuple(new_coords)
                 for k in range(j+1, len(directions)):
                     new_coords = list(coords)
-                    new_coords[direction] *= (1 - width)
-                    new_coords[directions[j]] *= (1 - width)
-                    new_coords[directions[k]] *= (1-width)
+                    new_coords[direction] -= (width)
+                    new_coords[directions[j]] -= (width)
+                    new_coords[directions[k]] -= (width)
                     yield tuple(new_coords)
 
     def _cut_electrode(self, coords: CoordsVar, simple_condition: typing.Callable[[CoordsVar], bool],
-                       directions: typing.Optional[typing.Set]=None, width=0.05
+                       directions: typing.Optional[typing.Set]=None, width=1.6
                        ):
         if not simple_condition(coords):
             return -1
         if directions is None:
             directions = self._standard_direction
+        width = self.gridstepmm*width
         for coords in self._gen_coords_for_test(coords, directions, width=width):
             if not simple_condition(coords):
                 return 0
@@ -188,8 +208,8 @@ class AbstractTrap(metaclass=ABCMeta):
 
         print("refine created")
 
-    def adjust_cell(self):
-        voltages = ",".join([f"{k}={v}" for (k, v) in self._voltages.items()])
+    def adjust_cell(self, adjust_rule: typing.Optional[typing.Callable] = None):
+        voltages = ",".join([f"{v.name}={v.value}" for v in self._voltages])
         self._adjust_cell(voltages)
 
     def _adjust_cell(self, voltages):
@@ -202,8 +222,8 @@ class AbstractTrap(metaclass=ABCMeta):
         subprocess.run(cmd)
         print("pa0 created")
 
-    def load_adjusted_pa(self):
-        self.pa = PA(file=f"{self.cell_name}.pa0")
+    def load_adjusted_pa(self, ending="0"):
+        self.pa = PA(file=f"{self.cell_name}.pa{ending}")
 
     def get_electrode_point(self, indexes, coords):
         i, j, k = indexes
@@ -217,48 +237,6 @@ class AbstractTrap(metaclass=ABCMeta):
     def show_this_pot(self, coords: CoordsVar):
         return True
 
-    def _unbend_dimention(self, what, coef1, coef2, abs=False):
-        f = lambda coef: np.abs(coef) if abs else coef
-
-        return np.array(list(f(coef1)*what[::coef1]) + list(f(coef2)*what[::coef2]))
-
-    def unbend_space(self, xs, ys, zs, potentials):
-        # first
-        xs = self._unbend_dimention(xs, -1, 1)
-        ys = self._unbend_dimention(ys, 1, 1)
-        zs = self._unbend_dimention(zs, 1, 1)
-        potentials = self._unbend_dimention(potentials, -1, 1, abs=True)
-        # second
-        xs = self._unbend_dimention(xs, 1, 1)
-        ys = self._unbend_dimention(ys, -1, 1)
-        zs = self._unbend_dimention(zs, 1, 1)
-        potentials = self._unbend_dimention(potentials, -1, 1, abs=True)
-        # third
-        xs = self._unbend_dimention(xs, 1, 1)
-        ys = self._unbend_dimention(ys, 1, 1)
-        zs = self._unbend_dimention(zs, -1, 1)
-        potentials = self._unbend_dimention(potentials, -1, 1, abs=True)
-        # print(xs.shape, ys.shape, zs.shape, potentials.shape)
-        return xs, ys, zs, potentials
-
-    def plot_3D_electrodes(self):
-        # https://stackoverflow.com/questions/12904912/how-to-set-camera-position-for-3d-plots-using-python-matplotlib
-        data = self._go_throw_volume(self.get_electrode_point, always_cartesian=True)
-        data = np.array(data)
-        xs = data[:, 0]
-        ys = data[:, 1]
-        zs = data[:, 2]
-        voltage = data[:, 3]
-        # xs, ys, zs, voltage = self.unbend_space(xs, ys, zs, voltage)  # TODO: make it works...
-
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        img = ax.scatter(xs[::15], ys[::15], zs[::15], c=voltage[::15], cmap=plt.hot())
-        fig.colorbar(img)
-        plt.show()
-
-        # plt.savefig("test.png")
-
     def _get_float_ind(self, coords: Coords[float]) -> Coords[float]:
         return Coords(
             x=coords.x / self.gridstepmm,
@@ -267,11 +245,13 @@ class AbstractTrap(metaclass=ABCMeta):
         )
 
     def _numerical_phi_cartesian(self, coords: Coords[float]):
+        # print(coords)
         # тут мы усредняем значение на узлах сетки, чтобы получить значение на границе
         indexes_float = self._get_float_ind(coords)
         i = int(np.floor(indexes_float.x))
         j = int(np.floor(indexes_float.y))
         k = int(np.floor(indexes_float.z))
+        # return self.pa.potential_real(i, j, k) # for fast creating
         alpha = indexes_float.x - i
         betta = indexes_float.y - j
         gamma = indexes_float.z - k
@@ -300,21 +280,52 @@ class AbstractTrap(metaclass=ABCMeta):
         y = r*np.sin(theta)
         return self._numerical_phi_cartesian(Coords(x, y, z))
 
-    def _get_averaged_phi_point(self, zfrac, rfrac, num_th=0):
+    def _get_averaged_phi_point(self, zfrac, rfrac, max_r, max_z, num_th=0):
         if not num_th:
             num_th = int(self.pts*np.pi/2)
-        z = zfrac*self.cell_border.z
-        r = rfrac*self.cell_border.x
+        z = zfrac * max_z
+        r = rfrac * max_r
         # усреднённое поле практическое
         return np.mean(np.array(
             [self._numerical_phi_cilindrical(z, r, theta) for theta in np.linspace(0, np.pi/2, num_th)]
         ))
 
-    def get_averaged_phi(self):
-        rs = np.linspace(0, 1, 10)
-        plt.plot(rs, [self._get_averaged_phi_point(0.2, r) for r in rs])
-        plt.show()
+    def get_averaged_phi(self, r_pts=50, z_pts=50, max_r=AVERAGED_AREA_LENGTH, max_z=AVERAGED_AREA_LENGTH):
+        rs = np.linspace(0, 1, r_pts)
+        zs = np.linspace(0, 1, z_pts)
+        Rs, Zs = np.meshgrid(rs, zs)
+        Phi = np.zeros_like(Rs)
+        for i in tqdm(range(Rs.shape[0])):
+            for j in range(Rs.shape[1]):
+                Phi[i,j] = self._get_averaged_phi_point(Zs[i,j], Rs[i,j], max_r, max_z)
+        return self._unbend_phi2D(Phi, Rs * max_r, Zs * max_z)
+
+    def _unbend_phi2D(self, Phi, Rs, Zs):
+        Phi_th = np.vstack((Phi[-2::-1, :], Phi))
+        Phi_th = np.hstack((Phi_th[:, -2::-1], Phi_th))
+        Rs_th = np.vstack((Rs[-2::-1, :], Rs))
+        Rs_th = np.hstack((-Rs_th[:, -2::-1], Rs_th))
+        Zs_th = np.vstack((-Zs[-2::-1, :], Zs))
+        Zs_th = np.hstack((Zs_th[:, -2::-1], Zs_th))
+        return Phi_th, Rs_th, Zs_th
+    
+    @staticmethod
+    def new_adjust_rule(voltage):
+        return voltage.to_adjust()
+        # for v in TrappedVoltages:
+        #     if voltage.value
+        
+
+
+    @abstractmethod
+    def _color_for_3d(self, voltage: Voltages):
         pass
+
+    def colors_for_3d(self):
+        return {v.value: self._color_for_3d(v)[0] for v in self._voltages}
+
+    def legend_for_3d(self):
+        return {self._color_for_3d(v)[0]: self._color_for_3d(v)[1] for v in self._voltages}
 
 
 class AbstractPenningTrap(AbstractTrap, metaclass=ABCMeta):
@@ -342,24 +353,39 @@ class AbstractPenningTrap(AbstractTrap, metaclass=ABCMeta):
 
     def get_electrode_type(self, coords: CoordsVar) -> int:
         if self.is_trapped_electrode(coords):
-            e_type = self.get_trap_electrode_type(coords)
+            e_type: Voltages = self.get_trap_electrode_type(coords)
         else:
-            e_type = self.calculate_nontrap_electrode_type(coords)
-        return self.voltages_to_int(e_type)
+            e_type: Voltages = self.calculate_nontrap_electrode_type(coords)
+        return e_type.value
 
-    def voltages_to_int(self, e_type: Voltages) -> int:
-        for i, t in enumerate(self._voltages):
-            if t == e_type:
-                return i + 1
+    def adjust_cell(self, adjust_rule: typing.Optional[typing.Callable] = None):
+        voltages = []
+        for t in self._voltages:
+            if adjust_rule is None:
+                potential = t.to_adjust()
+            else:
+                potential = adjust_rule(t)
+            voltages.append(f"{t.value}={potential}")
+        voltages = ",".join(voltages)
+        print(voltages)
+        self._adjust_cell(voltages)
 
     def put_point(self, indexes, coords):
         i, j, k = indexes
         if self.is_trapped_electrode(coords):
             e_type = self.get_trap_electrode_type(coords)
-            self.unrefined_pa.point(i, j, k, 1, self.voltages_to_int(e_type))
+            self.unrefined_pa.point(i, j, k, 1, e_type.value)
         elif self.is_other_electrode(coords):
             e_type = self.calculate_nontrap_electrode_type(coords)
-            self.unrefined_pa.point(i, j, k, 1, self.voltages_to_int(e_type))
+            self.unrefined_pa.point(i, j, k, 1, e_type.value)
+
+    def _color_for_3d(self, voltage: Voltages):
+        if voltage == TrappedVoltages.EXCITATION:
+            return "green", "Detection electrode"
+        if voltage == TrappedVoltages.DETECTION:
+            return "blue", "Excitation electrode"
+        if voltage == TrappedVoltages.TRAPPING:
+            return "red", "Trapping electrode"
 
 
 class AbstractPenningTrapWithSimpleElectrodes(AbstractPenningTrap, metaclass=ABCMeta):

@@ -1,11 +1,27 @@
-from traps.abstract_trap import AbstractPenningTrapWithSimpleElectrodes, Coords, CoordsVar, TrappedVoltages
+from traps.abstract_trap import AbstractPenningTrapWithSimpleElectrodes, Coords, CoordsVar, TrappedVoltages, Voltages
 from traps.cylindrical_trap import CylindricalTrap
 import numpy as np
 
+class TrappedVoltages2(Voltages):
+    EXCITATION = 1
+    DETECTION = 2
+    TRAPPING = 3
+    TRAPPING_B = 4
+
+    def to_adjust(self) -> int:
+        if self == self.DETECTION:
+            return 0
+        if self == self.EXCITATION:
+            return 0
+        if self == self.TRAPPING:
+            return 1
+        if self == self.TRAPPING_B:
+            return 1
 
 class DHCTrap(CylindricalTrap):
 
     name = "DHC"
+    _voltages = TrappedVoltages2
 
     def _is_trapped_electrode_simple(self, coords: CoordsVar):
         """
@@ -13,6 +29,7 @@ class DHCTrap(CylindricalTrap):
         This happens when 2*z^2 - r^2 >= 2*z0^2 - R^2
         """
         r, theta, z = coords
+        # z *= 1.05 # for view
         # if z >= self.cell_border.z:
         #     return True  ## open cell with grounded end
         # return False  ## for Open cell we have no hat!
@@ -21,7 +38,7 @@ class DHCTrap(CylindricalTrap):
         else:
             return False
 
-    def calculate_nontrap_electrode_type(self, coords: CoordsVar) -> int:
+    def calculate_nontrap_electrode_type(self, coords: CoordsVar) -> Voltages:
         r, theta, z = coords
         return self._get_electrode_type(theta, z)
 
@@ -46,12 +63,30 @@ class DHCTrap(CylindricalTrap):
         for n in range(N):
             l, r = self._get_phi_arias(n, z)
             if l <= theta <= r:
-                return TrappedVoltages.TRAPPING
+                return self._voltages.TRAPPING_B
             if l <= theta+2*np.pi <= r:
-                return TrappedVoltages.TRAPPING
+                return self._voltages.TRAPPING_B
         if 0 <= theta <= np.pi/4:
-            return TrappedVoltages.EXCITATION
+            return self._voltages.EXCITATION
         # if np.pi <= theta <= np.pi*3/2:
         #     return TrappedVoltages.EXCITATION
-        return TrappedVoltages.DETECTION
+        return self._voltages.DETECTION
+
+    def _color_for_3d(self, voltage: Voltages):
+        if voltage == TrappedVoltages2.EXCITATION:
+            return "green", "Detection electrode"
+        if voltage == TrappedVoltages2.DETECTION:
+            return "blue", "Excitation electrode"
+        if voltage == TrappedVoltages2.TRAPPING:
+            return "red", "Trapping electrode"
+        if voltage == TrappedVoltages2.TRAPPING_B:
+            return "red", "Trapping electrode"
+
+    @staticmethod
+    def new_adjust_rule(voltage):
+        if voltage.value == TrappedVoltages2.TRAPPING.value or voltage.value == TrappedVoltages2.TRAPPING_B.value:
+            return 3.13
+        else:
+            return 0
+
 

@@ -3,7 +3,7 @@ from traps.abstract_trap import AbstractPenningTrapWithSimpleElectrodes, Coords,
 
 class CubicTrap(AbstractPenningTrapWithSimpleElectrodes):
 
-    name = "Cubic"
+    name = "cubic"
 
     def _is_trapped_electrode_simple(self, coords: CoordsVar):
         x, y, z = coords
@@ -23,4 +23,5 @@ class CubicTrap(AbstractPenningTrapWithSimpleElectrodes):
                  ):
         self.size = size
         super().__init__(Coords(size, size, size), cell_name=cell_name, pts=pts)
+
 

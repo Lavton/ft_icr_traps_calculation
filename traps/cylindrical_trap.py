@@ -26,3 +26,12 @@ class CylindricalTrap(AbstractPenningTrapWithSimpleElectrodes):
 
     def __init__(self, z0: float, a: float, cell_name="test", *, pts=150):
         super().__init__(Coords(x=a, y=a, z=z0), cell_name=cell_name, pts=pts, cylindrical_geometry=True)
+
+    @staticmethod
+    def new_adjust_rule(voltage):
+        if voltage.value == TrappedVoltages.EXCITATION.value:
+            return 0
+        if voltage.value == TrappedVoltages.DETECTION.value:
+            return 0
+        if voltage.value == TrappedVoltages.TRAPPING.value:
+            return 0.976
