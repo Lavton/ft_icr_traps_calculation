@@ -314,8 +314,6 @@ class AbstractTrap(metaclass=ABCMeta):
         return voltage.to_adjust()
         # for v in TrappedVoltages:
         #     if voltage.value
-        
-
 
     @abstractmethod
     def _color_for_3d(self, voltage: Voltages):

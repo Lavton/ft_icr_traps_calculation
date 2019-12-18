@@ -34,4 +34,4 @@ class CylindricalTrap(AbstractPenningTrapWithSimpleElectrodes):
         if voltage.value == TrappedVoltages.DETECTION.value:
             return 0
         if voltage.value == TrappedVoltages.TRAPPING.value:
-            return 0.976
+            return 0.988

@@ -6,36 +6,37 @@ from PIL import Image
 import shutil
 import os
 from traps import abstract_trap
-_A_20_COMPARABLE = 1081
+_A_20_COMPARABLE = 1068
 _R_CLOUD = 2*10**-3
 _R_EXCITATION = 6*10**-3
 _Z_CLOUD = 4*2*10**-3
 _2D_IMAGE_LOCATION = r"C:\Users\Anton.Lioznov\YandexDisk\work\Skoltech\2019\Marchall\images\averaged_phis"
 
+def pure_cyclotron_motion(q, m, B):
+    return B * q / m
 
-def cyclotron_omega(q, m, B, A20, A30, A40, r, z):
-    return (
-        q*B + np.sqrt(
-               (q*B)**2 +
-               4*m*q* (
-                   A20 +
-                   6*A30*z +
-                   48*A40*z**2 - 12*A40*r**2
-               )
-           )
-           )/(2*m)
+def magnetron_omega(q, m, B, A20, A30, A40, r, z):
+    omega_c_per_two = pure_cyclotron_motion(q, m, B) / 2
+    # print(omega_c_per_two)
+    return omega_c_per_two - np.sqrt(
+        omega_c_per_two**2 - (q/m) * (A20 + 6*A30*z + 60*A40*z**2 - 12*A40*r**2)
+    )
 
 
 def find_delta_omega(A20, A30, A40):
     m = 500
     q = 1
+    q_e = 1.60217662 * 10**-19
+    m_p = 1.6605e-27
+    m *= m_p
+    q *= q_e
     B = 7
     rs = np.linspace(_R_EXCITATION-_R_CLOUD, _R_EXCITATION+_R_CLOUD, 100)
-    zs = np.linspace(0, _Z_CLOUD, 100)
+    zs = np.linspace(-_Z_CLOUD, _Z_CLOUD, 100)
     Omega = np.zeros((100, 100))
     for i, r in enumerate(rs):
         for j, z in enumerate(zs):
-            Omega[i, j] = cyclotron_omega(q, m, B, A20, A30, A40, r, z)
+            Omega[i, j] = magnetron_omega(q, m, B, A20, A30, A40, r, z)
     min_omega = np.min(Omega)
     max_omega = np.max(Omega)
     return min_omega, max_omega
@@ -51,8 +52,8 @@ def get_Y_coefs(Rs, Zs, Phi):
     # from https://stackoverflow.com/questions/33964913/equivalent-of-polyfit-for-a-2d-polynomial-in-python
     A = np.array([
         Zs_flat ** 2 - Rs_flat ** 2 / 2,
-        2 * Zs_flat ** 3 - 3 * Zs_flat * Rs_flat ** 2,
-        8 * Zs_flat ** 4 - 24 * Zs_flat ** 2 * Rs_flat ** 2 + 3 * Rs_flat ** 4,
+        5 * Zs_flat ** 3 - 3 * Zs_flat * Rs_flat ** 2,
+        35 * Zs_flat ** 4 - 30 * Zs_flat ** 2 * Rs_flat ** 2 + 3 * Rs_flat ** 4,
         Rs_flat * 0 + 1
     ]).T
     B = Phi.flatten()

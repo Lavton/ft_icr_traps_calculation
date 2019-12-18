@@ -85,7 +85,7 @@ class DHCTrap(CylindricalTrap):
     @staticmethod
     def new_adjust_rule(voltage):
         if voltage.value == TrappedVoltages2.TRAPPING.value or voltage.value == TrappedVoltages2.TRAPPING_B.value:
-            return 3.13
+            return 3.10
         else:
             return 0
 

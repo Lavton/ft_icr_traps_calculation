@@ -12,8 +12,8 @@ import os
 _3D_IMAGE_LOCATION = r"C:\Users\Anton.Lioznov\YandexDisk\work\Skoltech\2019\Marchall\images\3D"
 
 
-def create_copy_delete(trap: abstract_trap.AbstractPenningTrap, copy=True, delete=True):
-    create_figure(trap.legend_for_3d())
+def create_copy_delete(trap: abstract_trap.AbstractPenningTrap, copy=True, delete=True, show=False):
+    create_figure(trap.legend_for_3d(), show=show)
     time.sleep(1)
     if copy:
         dist = f"{_3D_IMAGE_LOCATION}\\{trap.name}.png"
@@ -210,7 +210,8 @@ def calc_and_plot_trap(trap: abstract_trap.AbstractPenningTrap, ipv, e_types_col
     ipv.style.use('minimal')
     ipv.show()
     time.sleep(10)
-    ipv.view(50, 25, 4*trap.model_lenghts.x/trap.model_lenghts.z)  # cylindar
+    # ipv.view(50, 25, 2.7*trap.model_lenghts.x/trap.model_lenghts.z)  # cylindar
+    ipv.view(50, 25, 3.5 * trap.model_lenghts.x / trap.model_lenghts.z)
     # ipv.view(50, 25, 4)  # cubic
     time.sleep(10)
     if expanded:
@@ -231,38 +232,29 @@ def prepare_trap_to_pic(trap: abstract_trap.AbstractPenningTrap, expanded=True):
     return trap
 
 
-def create_figure(legend):
-    img = Image.open("expanded_trap.png")
-    img2 = Image.open("original_trap.png")
-    img2 = img2.convert("RGBA")
-    # pixdata = img2.getdata()
+def create_figure(legend, show=False):
+    img: Image.Image = Image.open("expanded_trap.png")
+    w, h = img.size
+    new_h = 400
+    img = img.crop((0, (h-new_h)/2, w, (h+new_h)/2))
+    # NO legend and not expanded - we decide to left it to presentation
+    # img2 = Image.open("original_trap.png")
+    # img2 = img2.convert("RGBA")
 
-    # datas = img2.getdata()
-    # newData = []
-    # for item in datas:
-    #     if item[0] == 255 and item[1] == 255 and item[2] == 255:
-    #         newData.append((255, 255, 255, 0))
-    #     else:
-    #         if item[0] > 150:
-    #             newData.append((0, 0, 0, 255))
-    #         else:
-    #             newData.append(item)
-    #             # print(item)
-    #
-    # img2.putdata(newData)
-
-    font = ImageFont.truetype("arial.ttf", 20)
-    szes = img.size
-    k = 3
-    new_szes = (int(szes[0] / k), int(szes[1] / k))
-    d = ImageDraw.Draw(img)
-    d.rectangle(((0, 0), (250, len(legend) * 40 + 20)), fill=(220, 220, 220))
-    y = 10
-    for color, label in legend.items():
-        d.rectangle(((10, y), (50, y + 30)), fill=color)
-        d.text((65, y + 5), label, font=font, fill=(0, 0, 0))
-        y += 40
-    img.paste(img2.resize(new_szes), (img.size[0] - new_szes[0], img.size[1] - new_szes[1]))
-    d.text((img.size[0] - 120, img.size[1] - new_szes[1] + 30), "original trap",
-           font=ImageFont.truetype("arial.ttf", 15), fill=(0, 0, 0))
+    # font = ImageFont.truetype("arial.ttf", 20)
+    # szes = img.size
+    # k = 3
+    # new_szes = (int(szes[0] / k), int(szes[1] / k))
+    # d = ImageDraw.Draw(img)
+    # d.rectangle(((0, 0), (250, len(legend) * 40 + 20)), fill=(220, 220, 220))
+    # y = 10
+    # for color, label in legend.items():
+    #     d.rectangle(((10, y), (50, y + 30)), fill=color)
+    #     d.text((65, y + 5), label, font=font, fill=(0, 0, 0))
+    #     y += 40
+    # img.paste(img2.resize(new_szes), (img.size[0] - new_szes[0], img.size[1] - new_szes[1]))
+    # d.text((img.size[0] - 120, img.size[1] - new_szes[1] + 30), "original trap",
+    #        font=ImageFont.truetype("arial.ttf", 15), fill=(0, 0, 0))
+    if show:
+        img.show()
     img.save("trap.png")
