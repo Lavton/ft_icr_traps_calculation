@@ -104,7 +104,7 @@ def _calculate_mass_center(electrode: Set[Tuple[int, int, int]]):
 
 def _delta_move(x_mc, y_mc, z_mc, r_delta=0.02):
     r, theta, phi = cart2spher(x_mc, y_mc, z_mc)
-    r += r*r_delta
+    r +=  r*r_delta
     x, y, z = spher2cart(r, theta, phi)
     return x-x_mc, y-y_mc, z-z_mc
 
@@ -142,7 +142,15 @@ def expand_trap(trap: abstract_trap.AbstractPenningTrap):
     trap.load_adjusted_pa("#")
     electrodes, e_types = get_all_electrodes(trap)
     mass_centers = [_calculate_mass_center(electrode) for electrode in electrodes]
-    shifting = [_delta_move(*mc, r_delta=0.3) for mc in mass_centers]
+    r_shifts = []
+    for e_type in e_types:
+        if int(e_type) == 3:
+            r_shifts.append(1.5*0.3)
+        elif int(e_type) == 4:
+            r_shifts.append(0.5*0.3)
+        else:
+            r_shifts.append(0.3)
+    shifting = [_delta_move(*mc, r_delta=r_shift) for mc, r_shift in zip(mass_centers, r_shifts)]
     new_pa = trap.create_dump_pa()
     for sh, electrode, e_type in zip(shifting, electrodes, e_types):
         if math.isnan(sh[0]):
@@ -210,8 +218,8 @@ def calc_and_plot_trap(trap: abstract_trap.AbstractPenningTrap, ipv, e_types_col
     ipv.style.use('minimal')
     ipv.show()
     time.sleep(10)
-    # ipv.view(50, 25, 2.7*trap.model_lenghts.x/trap.model_lenghts.z)  # cylindar
-    ipv.view(50, 25, 3.5 * trap.model_lenghts.x / trap.model_lenghts.z)
+    ipv.view(50, 25, 2.7*trap.model_lenghts.x/trap.model_lenghts.z)  # cylindar
+    # ipv.view(50, 25, 3.5 * trap.model_lenghts.x / trap.model_lenghts.z)
     # ipv.view(50, 25, 4)  # cubic
     time.sleep(10)
     if expanded:

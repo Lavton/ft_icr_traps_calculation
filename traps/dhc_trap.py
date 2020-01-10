@@ -18,6 +18,7 @@ class TrappedVoltages2(Voltages):
         if self == self.TRAPPING_B:
             return 1
 
+
 class DHCTrap(CylindricalTrap):
 
     name = "DHC"

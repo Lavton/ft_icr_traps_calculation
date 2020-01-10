@@ -6,7 +6,7 @@ from PIL import Image
 import shutil
 import os
 from traps import abstract_trap
-_A_20_COMPARABLE = 1068
+_A_20_COMPARABLE = 4195.527
 _R_CLOUD = 2*10**-3
 _R_EXCITATION = 6*10**-3
 _Z_CLOUD = 4*2*10**-3
