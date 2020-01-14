@@ -15,15 +15,28 @@ _2D_IMAGE_LOCATION = r"C:\Users\Anton.Lioznov\YandexDisk\work\Skoltech\2019\Marc
 def pure_cyclotron_motion(q, m, B):
     return B * q / m
 
-def magnetron_omega(q, m, B, A20, A30, A40, r, z):
+def dY_2(R, Z):
+    return R *0 + 1
+
+def dY_4(R, Z):
+    return 48 * Z**2 - 12 * R**2
+
+def dY_6(R, Z):
+    return 240 * Z**4 - 360 * Z**2 * R**2 + 30 * R**4
+
+def magnetron_omega(q, m, B, A20, A40,  A60, r, z):
     omega_c_per_two = pure_cyclotron_motion(q, m, B) / 2
     # print(omega_c_per_two)
     return omega_c_per_two - np.sqrt(
-        omega_c_per_two**2 - (q/m) * (A20 + 6*A30*z + 60*A40*z**2 - 12*A40*r**2)
+        omega_c_per_two**2 - (q/m) * (
+                A20 * dY_2(r, z)
+                + A40 * dY_4(r, z)
+                + A60 * dY_6(r, z)
+        )
     )
 
 
-def find_delta_omega(A20, A30, A40):
+def find_delta_omega(A20, A40, A60, d):
     m = 500
     q = 1
     q_e = 1.60217662 * 10**-19
@@ -31,12 +44,12 @@ def find_delta_omega(A20, A30, A40):
     m *= m_p
     q *= q_e
     B = 7
-    rs = np.linspace(_R_EXCITATION-_R_CLOUD, _R_EXCITATION+_R_CLOUD, 100)
-    zs = np.linspace(-_Z_CLOUD, _Z_CLOUD, 100)
+    rs = np.linspace(_R_EXCITATION-_R_CLOUD, _R_EXCITATION+_R_CLOUD, 100) / d
+    zs = np.linspace(-_Z_CLOUD, _Z_CLOUD, 100) / d
     Omega = np.zeros((100, 100))
     for i, r in enumerate(rs):
         for j, z in enumerate(zs):
-            Omega[i, j] = magnetron_omega(q, m, B, A20, A30, A40, r, z)
+            Omega[i, j] = magnetron_omega(q, m, B, A20, A40, A60, r, z) / d**2
     min_omega = np.min(Omega)
     max_omega = np.max(Omega)
     return min_omega, max_omega
@@ -46,20 +59,53 @@ def estimate_comet_time_formation(min_omega, max_omega):
     return 2*np.pi/(max_omega - min_omega)
 
 
+def y_0(R, Z):
+    return R * 0 + 1
+
+
+def y_2(R, Z):
+    return (
+            +       Z**2
+            - 0.5 * R**2
+    )
+
+def y_3(R, Z):
+    return Z* (
+        2 * Z**2
+        - 3 * R**2
+    )
+def y_4(R, Z):
+    return (
+        + 8  * Z**4
+        - 24 * Z**2 * R**2
+        + 3         * R**4
+    )
+
+
+def y_6(R, Z):
+    return (
+        + 16  * Z**6
+        - 120 * Z**4 * R**2
+        + 90  * Z**2 * R**4
+        - 5          * R**6
+    )
+
+
 def get_Y_coefs(Rs, Zs, Phi):
     Rs_flat = Rs.flatten()
     Zs_flat = Zs.flatten()
     # from https://stackoverflow.com/questions/33964913/equivalent-of-polyfit-for-a-2d-polynomial-in-python
     A = np.array([
-        Zs_flat ** 2 - Rs_flat ** 2 / 2,
-        5 * Zs_flat ** 3 - 3 * Zs_flat * Rs_flat ** 2,
-        35 * Zs_flat ** 4 - 30 * Zs_flat ** 2 * Rs_flat ** 2 + 3 * Rs_flat ** 4,
-        Rs_flat * 0 + 1
+        y_0(Rs_flat, Zs_flat),
+        y_2(Rs_flat, Zs_flat),
+        y_4(Rs_flat, Zs_flat),
+        y_6(Rs_flat, Zs_flat),
     ]).T
     B = Phi.flatten()
     coeff, r, rank, s = np.linalg.lstsq(A, B)
-    A20, A30, A40, C = coeff
-    return A20, A30, A40, C
+    return coeff
+    # A20, A30, A40, C = coeff
+    # return A20, A30, A40, C
 
 
 def _plot_1_line(coord, phi, phi_etalon, position, plt, axes=0, **kwargs):

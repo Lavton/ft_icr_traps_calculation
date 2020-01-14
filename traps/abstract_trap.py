@@ -107,6 +107,11 @@ class AbstractTrap(metaclass=ABCMeta):
                     self.thetas[j, i] = np.arctan2(self.grid.y[j], self.grid.x[i])
                     self.rs[j, i] = np.sqrt(self.grid.y[j]**2 + self.grid.x[i]**2)
 
+    def get_d(self, r0=None, z0=None):
+        r0 = r0 if r0 else self.cell_border.x
+        z0 = z0 if z0 else self.cell_border.z
+        return np.sqrt(1 / 2 * (z0 ** 2 + 1 / 2 * r0 ** 2))
+
     def create_dump_pa(self) -> PA:
         return PA(
             symmetry='planar',  # symmetry type: 'planar' or 'cylindrical'
@@ -158,7 +163,7 @@ class AbstractTrap(metaclass=ABCMeta):
                     yield tuple(new_coords)
 
     def _cut_electrode(self, coords: CoordsVar, simple_condition: typing.Callable[[CoordsVar], bool],
-                       directions: typing.Optional[typing.Set]=None, width=1.6
+                       directions: typing.Optional[typing.Set]=None, width=1.6*3
                        ):
         if not simple_condition(coords):
             return -1

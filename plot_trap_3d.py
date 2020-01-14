@@ -80,6 +80,8 @@ def _dfs(i, j, k, trap: abstract_trap.AbstractTrap):
     while not queue.empty():
         i, j, k = queue.get()
         abs_neighbor = (abs(i), abs(j), abs(k))
+        if abs_neighbor[0] >= trap.model_lenghts.x or abs_neighbor[1] >= trap.model_lenghts.y or abs_neighbor[2] >= trap.model_lenghts.z:
+            continue
         if not trap.pa.electrode(*abs_neighbor):
             continue
         if (i, j, k) in visited_points:
@@ -104,7 +106,7 @@ def _calculate_mass_center(electrode: Set[Tuple[int, int, int]]):
 
 def _delta_move(x_mc, y_mc, z_mc, r_delta=0.02):
     r, theta, phi = cart2spher(x_mc, y_mc, z_mc)
-    r +=  r*r_delta
+    r += r*r_delta
     x, y, z = spher2cart(r, theta, phi)
     return x-x_mc, y-y_mc, z-z_mc
 
@@ -145,7 +147,8 @@ def expand_trap(trap: abstract_trap.AbstractPenningTrap):
     r_shifts = []
     for e_type in e_types:
         if int(e_type) == 3:
-            r_shifts.append(1.5*0.3)
+            r_shifts.append(1.5*0.3) # compensated
+            # r_shifts.append(0.1) # hyperbolic
         elif int(e_type) == 4:
             r_shifts.append(0.5*0.3)
         else:
@@ -221,6 +224,7 @@ def calc_and_plot_trap(trap: abstract_trap.AbstractPenningTrap, ipv, e_types_col
     ipv.view(50, 25, 2.7*trap.model_lenghts.x/trap.model_lenghts.z)  # cylindar
     # ipv.view(50, 25, 3.5 * trap.model_lenghts.x / trap.model_lenghts.z)
     # ipv.view(50, 25, 4)  # cubic
+    ipv.view(50, 25, 6*trap.model_lenghts.x/trap.model_lenghts.z)  # haperbolic
     time.sleep(10)
     if expanded:
         p_name = "expanded_trap.png"
