@@ -147,10 +147,10 @@ def expand_trap(trap: abstract_trap.AbstractPenningTrap):
     r_shifts = []
     for e_type in e_types:
         if int(e_type) == 3:
-            r_shifts.append(1.5*0.3) # compensated
+            r_shifts.append(0.3) # compensated
             # r_shifts.append(0.1) # hyperbolic
         elif int(e_type) == 4:
-            r_shifts.append(0.5*0.3)
+            r_shifts.append(0.3)
         else:
             r_shifts.append(0.3)
     shifting = [_delta_move(*mc, r_delta=r_shift) for mc, r_shift in zip(mass_centers, r_shifts)]

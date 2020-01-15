@@ -1,12 +1,13 @@
-from traps.abstract_trap import AbstractPenningTrapWithSimpleElectrodes, Coords, CoordsVar, TrappedVoltages, Voltages
+from traps.abstract_trap import AbstractPenningTrapWithSimpleElectrodes, Coords, CoordsVar
 import numpy as np
+from .voltage_enums import TrappedVoltages, Voltages
 
 
 class HyperbolicTrap(AbstractPenningTrapWithSimpleElectrodes):
 
     name = "hyperbolic"
 
-    def __init__(self, z0: float, a: float, cell_name="test", *, pts=150):
+    def __init__(self, z0: float, a: float, r_max: float, cell_name="test", *, pts=150):
 
         bigger = 3
         model_border = Coords[float](
@@ -14,7 +15,7 @@ class HyperbolicTrap(AbstractPenningTrapWithSimpleElectrodes):
             y=bigger * a,
             z=bigger * z0
         )
-        self.r_max = 1.5*a
+        self.r_max = r_max
         super().__init__(Coords(x=a, y=a, z=z0), cell_name=cell_name, pts=pts, model_border=model_border,
                          cylindrical_geometry=True)
 
@@ -26,6 +27,9 @@ class HyperbolicTrap(AbstractPenningTrapWithSimpleElectrodes):
         return 2*z**2 - r**2 >= 2*self.cell_border.z**2
 
     def _is_other_electrode_simple(self, coords: CoordsVar):
+        return self._ring_simple(coords)
+
+    def _ring_simple(self, coords: CoordsVar):
         r, theta, z = coords
         if r > self.r_max:
             return False
@@ -35,8 +39,6 @@ class HyperbolicTrap(AbstractPenningTrapWithSimpleElectrodes):
         r, theta, z = coords
         if 0 <= theta <= np.pi/4:
             return TrappedVoltages.EXCITATION
-        # if np.pi <= theta <= np.pi*3/2:
-        #     return TrappedVoltages.EXCITATION
         return TrappedVoltages.DETECTION
 
     @staticmethod
