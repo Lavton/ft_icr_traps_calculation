@@ -11,5 +11,5 @@ class DumpTrap(AbstractTrap):
 
 if __name__ == "__main__":
     dump_trap = DumpTrap(Coords(4, 4, 4))
-    dump_trap.generate_cell()
+    dump_trap.generate_trap()
     print("created")

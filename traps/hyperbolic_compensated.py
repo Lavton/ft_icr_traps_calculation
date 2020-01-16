@@ -61,7 +61,7 @@ class HyperbolicCompensatedTrap(HyperbolicTrap):
         if voltage.value == CompensatedVoltages.TRAPPING.value:
             return 1
         if voltage.value == CompensatedVoltages.COMPENSATED.value:
-            return 10
+            return 0.5
 
 
     def _color_for_3d(self, voltage: Voltages):

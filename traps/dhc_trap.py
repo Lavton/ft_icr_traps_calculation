@@ -31,7 +31,7 @@ class DHCTrap(CylindricalTrap):
         """
         r, theta, z = coords
         # z *= 1.05 # for view
-        # if z >= self.cell_border.z:
+        # if z >= self.trap_border.z:
         #     return True  ## open cell with grounded end
         # return False  ## for Open cell we have no hat!
         if 2 * z ** 2 - (r ** 2) >= 2 * self.cell_border.z ** 2 - self.cell_border.x ** 2:

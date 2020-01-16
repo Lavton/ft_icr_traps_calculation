@@ -23,7 +23,7 @@ def create_copy_delete(trap: abstract_trap.AbstractPenningTrap, copy=True, delet
         files_to_del = [
             f"{trap.cell_name}.pa#",
             f"{trap.cell_name}_expanded.pa#",
-            # f"{trap.cell_name}_surface.pa#",
+            # f"{trap.pa_file_name}_surface.pa#",
             "expanded_trap.png",
             "original_trap.png",
             "trap.png"
@@ -194,7 +194,7 @@ def create_temp_traps(trap: abstract_trap.AbstractPenningTrap):
     expand_trap(trap)
     trap.pa = PA(file=f"{trap.cell_name}_expanded.pa#")
     # leave_surface_only(trap)
-    # trap.pa = PA(file=f"{trap.cell_name}_surface.pa#")
+    # trap.pa = PA(file=f"{trap.pa_file_name}_surface.pa#")
     return trap
 
 
