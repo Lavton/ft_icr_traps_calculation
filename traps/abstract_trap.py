@@ -227,14 +227,14 @@ class AbstractTrap(metaclass=ABCMeta):
     def load_adjusted_pa(self, ending="0"):
         self.pa = PA(file=f"{self.pa_filename}.pa{ending}")
 
-    def get_electrode_point(self, indexes, coords):
-        i, j, k = indexes
-        if self.pa.electrode(i, j, k):
-            return (*coords, self.pa.potential_real(i, j, k))
-        return None
-
-    def get_potential_point(self, indexes, coords):
-        return (*coords, self.pa.potential_real(*indexes))
+    # def get_electrode_point(self, indexes, coords):
+    #     i, j, k = indexes
+    #     if self.pa.electrode(i, j, k):
+    #         return (*coords, self.pa.potential_real(i, j, k))
+    #     return None
+    #
+    # def get_potential_point(self, indexes, coords):
+    #     return (*coords, self.pa.potential_real(*indexes))
 
     # def show_this_pot(self, coords: CoordsVar):
     #     return True
