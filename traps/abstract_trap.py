@@ -239,78 +239,7 @@ class AbstractTrap(metaclass=ABCMeta):
     # def show_this_pot(self, coords: CoordsVar):
     #     return True
     #
-    def _get_float_ind(self, coords: Coords[float]) -> Coords[float]:
-        return Coords(
-            x=coords.x / self.gridstepmm,
-            y=coords.y / self.gridstepmm,
-            z=coords.z / self.gridstepmm
-        )
 
-    def _numerical_phi_cartesian(self, coords: Coords[float]):
-        # print(coords)
-        # тут мы усредняем значение на узлах сетки, чтобы получить значение на границе
-        indexes_float = self._get_float_ind(coords)
-        i = int(np.floor(indexes_float.x))
-        j = int(np.floor(indexes_float.y))
-        k = int(np.floor(indexes_float.z))
-        # return self.pa.potential_real(i, j, k) # for fast creating
-        alpha = indexes_float.x - i
-        betta = indexes_float.y - j
-        gamma = indexes_float.z - k
-        p000 = self.pa.potential_real(x=i, y=j, z=k)
-        p001 = self.pa.potential_real(x=i, y=j, z=k + 1)
-        p010 = self.pa.potential_real(x=i, y=j + 1, z=k)
-        p011 = self.pa.potential_real(x=i, y=j + 1, z=k + 1)
-        p100 = self.pa.potential_real(x=i + 1, y=j, z=k)
-        p101 = self.pa.potential_real(x=i + 1, y=j, z=k + 1)
-        p110 = self.pa.potential_real(x=i + 1, y=j + 1, z=k)
-        p111 = self.pa.potential_real(x=i + 1, y=j + 1, z=k + 1)
-        #     return p000
-        return (
-                +(alpha) * (betta) * (gamma) * p111
-                + (alpha) * (1 - betta) * (gamma) * p101
-                + (alpha) * (betta) * (1 - gamma) * p110
-                + (alpha) * (1 - betta) * (1 - gamma) * p100
-                + (1 - alpha) * (betta) * (gamma) * p011
-                + (1 - alpha) * (1 - betta) * (gamma) * p001
-                + (1 - alpha) * (betta) * (1 - gamma) * p010
-                + (1 - alpha) * (1 - betta) * (1 - gamma) * p000
-        )
-
-    def _numerical_phi_cilindrical(self, z, r, theta):
-        x = r*np.cos(theta)
-        y = r*np.sin(theta)
-        return self._numerical_phi_cartesian(Coords(x, y, z))
-
-    def _get_averaged_phi_point(self, zfrac, rfrac, max_r, max_z, num_th=0):
-        if not num_th:
-            num_th = int(self.pts*np.pi/2)
-        z = zfrac * max_z
-        r = rfrac * max_r
-        # усреднённое поле практическое
-        return np.mean(np.array(
-            [self._numerical_phi_cilindrical(z, r, theta) for theta in np.linspace(0, np.pi/2, num_th)]
-        ))
-
-    def get_averaged_phi(self, r_pts=50, z_pts=50, max_r=AVERAGED_AREA_LENGTH, max_z=AVERAGED_AREA_LENGTH):
-        rs = np.linspace(0, 1, r_pts)
-        zs = np.linspace(0, 1, z_pts)
-        Rs, Zs = np.meshgrid(rs, zs)
-        Phi = np.zeros_like(Rs)
-        for i in tqdm(range(Rs.shape[0])):
-            for j in range(Rs.shape[1]):
-                Phi[i,j] = self._get_averaged_phi_point(Zs[i,j], Rs[i,j], max_r, max_z)
-        return self._unbend_phi2D(Phi, Rs * max_r, Zs * max_z)
-
-    def _unbend_phi2D(self, Phi, Rs, Zs):
-        Phi_th = np.vstack((Phi[-2::-1, :], Phi))
-        Phi_th = np.hstack((Phi_th[:, -2::-1], Phi_th))
-        Rs_th = np.vstack((Rs[-2::-1, :], Rs))
-        Rs_th = np.hstack((-Rs_th[:, -2::-1], Rs_th))
-        Zs_th = np.vstack((-Zs[-2::-1, :], Zs))
-        Zs_th = np.hstack((Zs_th[:, -2::-1], Zs_th))
-        return Phi_th, Rs_th, Zs_th
-    
     @abstractmethod
     def _color_for_3d(self, voltage: Voltages):
         pass
