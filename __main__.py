@@ -18,12 +18,12 @@ if __name__ == "__main__":
     args = parser.parse_args(["--2d"])
     if args.__getattribute__("3d"):
         logging.info("3D mode")
-        trap = get_current_trap_3d()
+        trap, params = get_current_trap_3d()
         logging.info(trap.__class__)
         logging.info(trap.colors_for_3d())
         logging.info(trap.legend_for_3d())
         trap.generate_trap()
-        trap = plot_trap_3d.create_temp_traps(trap)
+        trap = plot_trap_3d.create_temp_traps(trap, params)
         print("open Jupyter and run code.")
 
     if args.__getattribute__("2d"):
