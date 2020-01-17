@@ -240,14 +240,3 @@ class AbstractTrap(metaclass=ABCMeta):
     #     return True
     #
 
-    @abstractmethod
-    def _color_for_3d(self, voltage: Voltages):
-        pass
-
-    def colors_for_3d(self):
-        return {v.value: self._color_for_3d(v)[0] for v in self._voltages}
-
-    def legend_for_3d(self):
-        return {self._color_for_3d(v)[0]: self._color_for_3d(v)[1] for v in self._voltages}
-
-
