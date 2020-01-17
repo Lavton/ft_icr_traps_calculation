@@ -54,11 +54,3 @@ class AbstractPenningTrap(AbstractTrap, metaclass=ABCMeta):
             e_type = self.calculate_nontrap_electrode_type(coords)
             self.unrefined_pa.point(i, j, k, 1, e_type.value)
 
-    def _color_for_3d(self, voltage: Voltages):
-        if voltage == TrappedVoltages.EXCITATION:
-            return "green", "Detection electrode"
-        if voltage == TrappedVoltages.DETECTION:
-            return "blue", "Excitation electrode"
-        if voltage == TrappedVoltages.TRAPPING:
-            return "red", "Trapping electrode"
-

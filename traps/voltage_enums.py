@@ -64,3 +64,13 @@ class CompensatedVoltages(Voltages):
             return 1
         if self == self.COMPENSATED:
             return 2
+
+    def _color_for_3d(self, voltage) -> Tuple[str, str]:
+        if voltage.value == CompensatedVoltages.EXCITATION.value:
+            return "green", "Detection electrode"
+        if voltage.value == CompensatedVoltages.DETECTION.value:
+            return "blue", "Excitation electrode"
+        if voltage.value == CompensatedVoltages.TRAPPING.value:
+            return "red", "Trapping electrode"
+        if voltage.value == CompensatedVoltages.COMPENSATED.value:
+            return "yellow", "Compensated electrode"

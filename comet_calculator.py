@@ -33,7 +33,7 @@ def get_Y_coefs(Rs, Zs, Phi, d):
 
 def print_coeffs(coeffs):
     printable = ["{:.1e}".format(c) for c in coeffs[1:]]
-    result = f"$A_2 = {printable[0]}$, $A_4 = {printable[1]}$, $A_6 = {printable[2]}$"
+    result = f"$A_{{20}} = {printable[0]}$, $A_{{40}} = {printable[1]}$, $A_{{60}} = {printable[2]}$"
     print(result)
 
 
