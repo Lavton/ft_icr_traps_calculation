@@ -6,7 +6,7 @@ from .voltage_enums import Voltages, CompensatedVoltages
 
 class HyperbolicCompensatedTrap(HyperbolicTrap):
 
-    name = "hyperbolic compensated"
+    name = "hyperbolic_compensated"
     _voltages = CompensatedVoltages
 
     def __init__(self, z0: float, a: float, rc: float, r_max: float, pa_file_name="test", *, pts=150):

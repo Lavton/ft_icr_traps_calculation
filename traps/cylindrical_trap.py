@@ -1,17 +1,19 @@
-from traps.abstract_trap import AbstractPenningTrapWithSimpleElectrodes, Coords, CoordsVar, TrappedVoltages
+from traps.abstract_trap import Coords, CoordsVar
+from .abstract_penning_with_simple_electrode_trap import AbstractPenningTrapWithSimpleElectrodes
+from .voltage_enums import TrappedVoltages
 import numpy as np
 
 
 class CylindricalTrap(AbstractPenningTrapWithSimpleElectrodes):
     name = "cylindrical"
 
-    def _is_trapped_electrode_simple(self, coords: CoordsVar):
+    def _is_endcap_electrode_simple(self, coords: CoordsVar):
         r, theta, z = coords
-        return z >= self.cell_border.z
+        return z >= self.trap_border.z
 
     def _is_other_electrode_simple(self, coords: CoordsVar):
         r, theta, z = coords
-        if r ** 2 < self.cell_border.x ** 2:
+        if r ** 2 < self.trap_border.x ** 2:
             return False
         else:
             return True
@@ -24,14 +26,13 @@ class CylindricalTrap(AbstractPenningTrapWithSimpleElectrodes):
         #     return TrappedVoltages.EXCITATION
         return TrappedVoltages.DETECTION
 
-    def __init__(self, z0: float, a: float, cell_name="test", *, pts=150):
-        super().__init__(Coords(x=a, y=a, z=z0), cell_name=cell_name, pts=pts, cylindrical_geometry=True)
+    def __init__(self, z0: float, a: float, pa_file_name="test", *, pts=150):
+        super().__init__(Coords(x=a, y=a, z=z0), pa_file_name=pa_file_name, pts=pts, cylindrical_geometry=True)
 
-    @staticmethod
-    def new_adjust_rule(voltage):
+    def new_adjust_rule(self, voltage):
         if voltage.value == TrappedVoltages.EXCITATION.value:
             return 0
         if voltage.value == TrappedVoltages.DETECTION.value:
             return 0
         if voltage.value == TrappedVoltages.TRAPPING.value:
-            return 0.988*12.4
+            return 0.988

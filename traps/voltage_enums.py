@@ -49,6 +49,7 @@ class TrappedVoltages(Voltages):
         if voltage.value == self.TRAPPING.value:
             return "red", "Trapping electrode"
 
+
 class CompensatedVoltages(Voltages):
     EXCITATION = 1
     DETECTION = 2
