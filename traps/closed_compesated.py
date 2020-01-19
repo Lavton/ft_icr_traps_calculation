@@ -25,7 +25,7 @@ class ClosedCompesatedCylindricalTrap(CylindricalTrap):
         if voltage.value == CompensatedVoltages.TRAPPING.value:
             return 1.037
         if voltage.value == CompensatedVoltages.COMPENSATED.value:
-            return  0.1455
+            return 0.1455
 
     def dkdvc(self, k):
         """calculate V_0 * d A_{k0}/ d V_c"""

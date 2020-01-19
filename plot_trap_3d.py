@@ -53,9 +53,6 @@ def calc_and_plot_trap(trap: abstract_trap.AbstractTrap, trap_params: TrapVisPar
     # bad magic: ipv need some time to create the picture and only after it it will able to rotate the figure
     time.sleep(10)
     ipv.view(trap_params.view_th, trap_params.view_phi, trap_params.dist*trap.model_lenghts.x/trap.model_lenghts.z)
-    # ipv.view(50, 25, 3.5 * trap.model_lenghts.x / trap.model_lenghts.z)
-    # ipv.view(50, 25, 4)  # cubic
-    # ipv.view(50, 25, 6*trap.model_lenghts.x/trap.model_lenghts.z)  # haperbolic
     # again same bad magic for saving fig
     time.sleep(10)
     if expanded:
