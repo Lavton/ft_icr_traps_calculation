@@ -1,5 +1,6 @@
 import comet_calculator
 import plot_trap_3d
+import utils_for_trap
 from traps import cubic_trap, dhc_trap, dump_trap, cylindrical_trap, get_current_trap_3d, get_current_trap
 from traps.abstract_trap import Coords
 from SIMION.PA import PA
@@ -37,11 +38,15 @@ if __name__ == "__main__":
         logging.info("trap created")
         Phi, Rs, Zs = trap.get_averaged_phi()
         d = trap.get_d()
-        A00, A20, A40, A60 = comet_calculator.get_Y_coefs(Rs/d, Zs/d, Phi)
-        Phi20 = A20 * (Zs ** 2 - Rs ** 2 / 2)
-        min_omega, max_omega = comet_calculator.find_delta_omega(A20, A40, A60, d)
+        coeffs = comet_calculator.get_Y_coefs(Rs, Zs, Phi, d)
+        comet_calculator.print_coeffs(coeffs)
+
+        min_omega, max_omega = comet_calculator.find_delta_omega(*coeffs, d)
         time_to_comet_formation = comet_calculator.estimate_comet_time_formation(min_omega, max_omega)
         print(f"!!!! TIME OF COMET FORMATION for trap '{trap.name}' = {time_to_comet_formation} s")
+        abs_A20 = coeffs[1] / d ** 2
+        Phi, Rs, Zs = utils_for_trap.get_averaged_phi(trap, max_r=trap.trap_border.y, max_z=trap.trap_border.z)
+        Phi20 = (abs_A20) * (Zs ** 2 - Rs ** 2 / 2)
         comet_calculator.plot_graphic(Rs, Zs, Phi, Phi20, axis="z")
         comet_calculator.plot_graphic(Rs, Zs, Phi, Phi20, axis="r")
         comet_calculator.combine_copy_delete(trap)
