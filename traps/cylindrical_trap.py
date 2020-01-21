@@ -22,8 +22,6 @@ class CylindricalTrap(AbstractPenningTrapWithSimpleElectrodes):
         r, theta, z = coords
         if 0 <= theta <= np.pi/4:
             return TrappedVoltages.EXCITATION
-        # if np.pi <= theta <= np.pi*3/2:
-        #     return TrappedVoltages.EXCITATION
         return TrappedVoltages.DETECTION
 
     def __init__(self, z0: float, a: float, pa_file_name="test", model_border=None, *, pts=150):

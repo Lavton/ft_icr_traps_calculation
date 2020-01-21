@@ -1,6 +1,7 @@
 from .cylindrical_trap import CylindricalTrap
 from .abstract_trap import CoordsVar, Coords
 from .voltage_enums import gen_voltage_enum
+import numpy as np
 
 _Voltages = gen_voltage_enum(2, 1)
 
@@ -30,7 +31,9 @@ class TolmachovTrap(CylindricalTrap):
     def calculate_nontrap_electrode_type(self, coords: CoordsVar):
         r, theta, z = coords
         if z < self.trap_border.z - self.zc1 - self.zc2:
-            return super(TolmachovTrap, self).calculate_nontrap_electrode_type(coords)
+            if 0 <= theta <= np.pi / 6:
+                return self._voltages.EXCITATION
+            return self._voltages.DETECTION
         elif z <= self.trap_border.z - self.zc2:
             return self._voltages.COMPENSATED_0
         elif z <= self.trap_border.z:
@@ -39,10 +42,10 @@ class TolmachovTrap(CylindricalTrap):
             return self._voltages.TRAPPING
 
     def new_adjust_rule(self, voltage):
-        k = 1
+        k = 2.3
         if voltage.value == self._voltages.COMPENSATED_0.value:
             return 0.1333*k
         if voltage.value == self._voltages.COMPENSATED_1.value:
             return 0.3167*k
         if voltage.value == self._voltages.TRAPPING.value:
-            return  1*k 
+            return 1*k
