@@ -172,10 +172,11 @@ def get_all_electrodes(trap: AbstractTrap, without_symmetry=True) -> Tuple[
                     # use depth-first-search algorithm to visit all points of the electrode
                     e, v = _dfs(i, j, k, trap)
                     # add the result
-                    electrodes.append(e)
-                    electrode_type = trap.pa.potential_real(i, j, k)
-                    e_types.append(electrode_type)
                     visited_points = visited_points.union(v)
+                    if len(e) > 20:
+                        electrodes.append(e)
+                        electrode_type = trap.pa.potential_real(i, j, k)
+                        e_types.append(electrode_type)
     if not without_symmetry:
         # without symmetry also check the all other 7/8 of space
         for k_, z in tqdm(enumerate(trap.grid.z), total=trap.model_lenghts.z):
@@ -185,10 +186,11 @@ def get_all_electrodes(trap: AbstractTrap, without_symmetry=True) -> Tuple[
                     for i, j, k in _gen_near_coords(i_, j_, k_, (-1, 1), delta=False):
                         if trap.pa.electrode(abs(i), abs(j), abs(k)) and (i, j, k) not in visited_points:
                             e, v = _dfs(i, j, k, trap)
-                            electrodes.append(e)
-                            electrode_type = trap.pa.potential_real(i, j, k)
-                            e_types.append(electrode_type)
                             visited_points = visited_points.union(v)
+                            if len(e) > 20:
+                                electrodes.append(e)
+                                electrode_type = trap.pa.potential_real(i, j, k)
+                                e_types.append(electrode_type)
 
     return electrodes, e_types
 

@@ -126,7 +126,7 @@ def gen_voltage_enum(num_of_compensated=0, num_of_trapped=0):
         color_descript[last_num + 1] = (compensated_colors[i], f"Compensated electrode {i+1}")
         adjust_dict[last_num + 1] = 0
         last_num += 1
-    trapping_colors = ["red", "coral", "tomato", "salmon"]
+    trapping_colors = ["red", "coral", "tomato", "salmon", "sienna"]
     for i in range(num_of_trapped):
         voltages[f"TRAPPING_{i}" if num_of_trapped > 1 else "TRAPPING"] = last_num + 1
         color_descript[last_num + 1] = (trapping_colors[i], f"Trapping electrode {i+1}")
