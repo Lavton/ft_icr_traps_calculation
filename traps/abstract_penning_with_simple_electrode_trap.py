@@ -40,12 +40,12 @@ class AbstractPenningTrapWithSimpleElectrodes(AbstractPenningTrap, metaclass=ABC
             pts=150, model_border: typing.Optional[Coords[float]] =None,
             cylindrical_geometry=False, electrode_width=1.6):
 
-        self.electrode_width = electrode_width
         self._standard_direction = {0, 1, 2} if not cylindrical_geometry else {0, 2}
         super(AbstractPenningTrapWithSimpleElectrodes, self).__init__(
             trap_border=trap_border, pa_file_name=pa_file_name,
             pts=pts, model_border=model_border, cylindrical_geometry=cylindrical_geometry
         )
+        self.electrode_width = self.gridstepmm*electrode_width
 
     def _gen_coords_for_test(self, coords: CoordsVar, directions: typing.Set, width):
         """return coords near by to check them in `simple_condition`."""
@@ -92,7 +92,7 @@ class AbstractPenningTrapWithSimpleElectrodes(AbstractPenningTrap, metaclass=ABC
             return -1
         if directions is None:
             directions = self._standard_direction
-        width = self.gridstepmm*self.electrode_width  # approximate width of the electrode
+        width = self.electrode_width  # approximate width of the electrode
         for coords in self._gen_coords_for_test(coords, directions, width=width):
             # check in what coordinates we have electrode
             # if simple condition is:

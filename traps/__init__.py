@@ -4,6 +4,7 @@ from traps import hyperbolic_trap, hyperbolic_compensated, cuboid_trap, cubic_tr
 from traps import closed_compesated, open_compensated, dhc_trap
 
 from traps import tolmachov_trap, brustkern_trap, infinity_cell, trapping_ring, pseudo_pot_trap
+from traps import kanawati_trap, wang_trap
 
 
 def get_current_trap_3d():
@@ -21,7 +22,10 @@ def get_current_trap_3d():
     # trap, params = brustkern_trap.BrustkernTrap(a=R, pts=100), TrapVisParams(dist=12)
     # trap, params = infinity_cell.InfinityCell(a=R, z0=R, pts=100), TrapVisParams(dist=2.5)
     # trap, params = trapping_ring.TrappingRingTrap(a=R, pts=100), TrapVisParams(dist=2.5)
-    trap, params = pseudo_pot_trap.PseudoPotentialTrap(a=R, z0=R, wire_num=15, pts=100), TrapVisParams(dist=2.5)
+    # trap, params = pseudo_pot_trap.PseudoPotentialTrap(a=R, z0=R, wire_num=15, pts=100), TrapVisParams(dist=2.5)
+    # trap, params = kanawati_trap.KanawatyTrap(a=R, pts=100), TrapVisParams(dist=7)
+    trap, params = wang_trap.WangTrap(a=R, z0=R, delta_c=R/20, wire_num=15, pts=100), TrapVisParams(dist=2.5)
+
     return trap, params
 
 
@@ -38,6 +42,7 @@ def get_current_trap():
     # trap = tolmachov_trap.TolmachovTrap(a=R, pts=200)
     # trap = brustkern_trap.BrustkernTrap(a=R, pts=100)
     # trap = infinity_cell.InfinityCell(a=R, z0=R, pts=150)
-    trap = trapping_ring.TrappingRingTrap(a=R, pts=150)
+    # trap = trapping_ring.TrappingRingTrap(a=R, pts=150)
+    trap = kanawati_trap.KanawatyTrap(a=R, pts=150)
     return trap
 
