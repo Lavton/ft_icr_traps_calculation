@@ -53,7 +53,7 @@ def find_delta_omega(A00, A20, A40, A60, d):
     Omega = np.zeros((100, 100))
     for i, r in enumerate(rs):
         for j, z in enumerate(zs):
-            Omega[i, j] = _magnetron_freq(q, m, B, A20, A40, A60, r, z) / d ** 2
+            Omega[i, j] = _reduced_cyclotron_freq(q, m, B, A20, A40, A60, r, z) / d ** 2
     # find min and max frequency
     min_omega = np.min(Omega)
     max_omega = np.max(Omega)
@@ -65,10 +65,11 @@ def _pure_cyclotron_freq(q, m, B):
     return B * q / m
 
 
-def _magnetron_freq(q, m, B, A20, A40, A60, r, z):
+def _reduced_cyclotron_freq(q, m, B, A20, A40, A60, r, z):
     """estimate the magnetron frequency"""
     omega_c_per_two = _pure_cyclotron_freq(q, m, B) / 2
-    return omega_c_per_two - np.sqrt(
+    # print("test")
+    return omega_c_per_two + np.sqrt(
         omega_c_per_two**2 - (q/m) * (
                 A20 * _dY_2(r, z)
                 + A40 * _dY_4(r, z)

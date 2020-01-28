@@ -3,7 +3,7 @@ from plot_3d_trap_params import TrapVisParams
 from traps import hyperbolic_trap, hyperbolic_compensated, cuboid_trap, cubic_trap, cylindrical_trap
 from traps import closed_compesated, open_compensated, dhc_trap
 
-from traps import tolmachov_trap, brustkern_trap, infinity_cell, trapping_ring, pseudo_pot_trap
+from traps import tolmachov_trap, brustkern_trap, infinity_cell, open_trap, trapping_ring, pseudo_pot_trap
 from traps import kanawati_trap, wang_trap
 
 
@@ -21,10 +21,11 @@ def get_current_trap_3d():
     # trap, params = tolmachov_trap.TolmachovTrap(a=R, pts=100), TrapVisParams(dist=15)
     # trap, params = brustkern_trap.BrustkernTrap(a=R, pts=100), TrapVisParams(dist=12)
     # trap, params = infinity_cell.InfinityCell(a=R, z0=R, pts=100), TrapVisParams(dist=2.5)
+    trap, params = open_trap.OpenCylindricalTrap(a=R, z0=R, ze=3*R, pts=100), TrapVisParams(dist=30)
     # trap, params = trapping_ring.TrappingRingTrap(a=R, pts=100), TrapVisParams(dist=2.5)
     # trap, params = pseudo_pot_trap.PseudoPotentialTrap(a=R, z0=R, wire_num=15, pts=100), TrapVisParams(dist=2.5)
     # trap, params = kanawati_trap.KanawatyTrap(a=R, pts=100), TrapVisParams(dist=7)
-    trap, params = wang_trap.WangTrap(a=R, z0=R, delta_c=R/20, wire_num=15, pts=100), TrapVisParams(dist=2.5)
+    # trap, params = wang_trap.WangTrap(a=R, z0=R, delta_c=R/20, wire_num=15, pts=100), TrapVisParams(dist=2.5)
 
     return trap, params
 
@@ -38,11 +39,12 @@ def get_current_trap():
     # trap = cylindrical_trap.CylindricalTrap(a=R, z0=R, pts=200)
     # trap = closed_compesated.ClosedCompesatedCylindricalTrap(a=1.16*R, z0=R, dzc=0.3*R, pts=200)
     # trap = open_compensated.OpenCompensatedCylindricalTrap(a=1.0239*R, z0=R, dzc=0.8351*R, ze=4.327*R, pts=220)
-    # trap = dhc_trap.DHCTrap(a=R, z0=2*R, beta=0.9, pts=200)
+    trap = dhc_trap.DHCTrap(a=R, z0=2*R, beta=0.9, pts=200)
     # trap = tolmachov_trap.TolmachovTrap(a=R, pts=200)
     # trap = brustkern_trap.BrustkernTrap(a=R, pts=100)
     # trap = infinity_cell.InfinityCell(a=R, z0=R, pts=150)
     # trap = trapping_ring.TrappingRingTrap(a=R, pts=150)
-    trap = kanawati_trap.KanawatyTrap(a=R, pts=150)
+    # trap = kanawati_trap.KanawatyTrap(a=R, pts=150)
     return trap
 
+# 
