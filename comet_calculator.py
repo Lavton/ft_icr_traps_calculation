@@ -125,6 +125,27 @@ def _plot_2_lines(Rs, Zs, Phi, Phi20, position, color, axis: str, str_repr, plt)
     _plot_1_line(coord, Phi20, Phi, position, plt, _axes, linestyle="--", label=f"$approx(\phi({axis}={str_repr}))$", color=color)
 
 
+def plot_contour(Rs, Zs, Phi, trap, number=10, mode="half"):
+    colorinterpolation = 200
+    colourMap = plt.cm.plasma
+    l = Rs.shape[0] // 2 + 1
+    if mode=="half":
+        CS = plt.contourf(Zs[:l, :], Rs[:l, :], Phi[:l, :], colorinterpolation, cmap=colourMap)
+    if mode=="full":
+        CS = plt.contourf(Zs[:, :], Rs[:, :], Phi[:, :], colorinterpolation, cmap=colourMap)
+    if mode=="quarter":
+        CS = plt.contourf(Zs[:l, :l], Rs[:l, :l], Phi[:l, :l], colorinterpolation, cmap=colourMap)
+    levels = np.linspace(Phi.min(), Phi.max(), number)
+    modified_l = np.exp((levels / levels[-1])[::-1] * 2) / np.exp(2)
+    colors = [(l, l, l) for l in modified_l]
+    CS2 = plt.contour(CS, levels=levels, colors=colors)
+    cbar = plt.colorbar(CS)
+    cbar.add_lines(CS2)
+    plt.savefig("contour.png")
+    shutil.copy("contour.png", f"{_2D_IMAGE_LOCATION}\\{trap.name}_contour.png")
+    shutil.copy("contour.png", f"{_2D_IMAGE_LOCATION}\\{trap.name}_contour_{mode}.png")
+
+
 def combine_copy_delete(trap: abstract_trap.AbstractTrap, copy=True, delete=False, show=False):
     """combine and save 2 graphics"""
     images = [Image.open(x) for x in [f"phi_comp_{ax}.png" for ax in ("r", "z")]]

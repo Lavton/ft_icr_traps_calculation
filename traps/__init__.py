@@ -39,12 +39,10 @@ def get_current_trap():
     # trap = cylindrical_trap.CylindricalTrap(a=R, z0=R, pts=200)
     # trap = closed_compesated.ClosedCompesatedCylindricalTrap(a=1.16*R, z0=R, dzc=0.3*R, pts=200)
     # trap = open_compensated.OpenCompensatedCylindricalTrap(a=1.0239*R, z0=R, dzc=0.8351*R, ze=4.327*R, pts=220)
-    trap = dhc_trap.DHCTrap(a=R, z0=2*R, beta=0.9, pts=200)
+    # trap = dhc_trap.DHCTrap(a=R, z0=2*R, beta=0.9, pts=200)
     # trap = tolmachov_trap.TolmachovTrap(a=R, pts=200)
     # trap = brustkern_trap.BrustkernTrap(a=R, pts=100)
     # trap = infinity_cell.InfinityCell(a=R, z0=R, pts=150)
-    # trap = trapping_ring.TrappingRingTrap(a=R, pts=150)
+    trap = trapping_ring.TrappingRingTrap(a=R, pts=150)
     # trap = kanawati_trap.KanawatyTrap(a=R, pts=150)
     return trap
-
-# 

@@ -123,13 +123,13 @@ def gen_voltage_enum(num_of_compensated=0, num_of_trapped=0):
     for i in range(num_of_compensated):
 
         voltages[f"COMPENSATED_{i}" if num_of_compensated > 1 else "COMPENSATED"] = last_num + 1
-        color_descript[last_num + 1] = (compensated_colors[i], f"Compensated electrode {i+1}")
+        color_descript[last_num + 1] = (compensated_colors[i % len(compensated_colors)], f"Compensated electrode {i+1}")
         adjust_dict[last_num + 1] = 0
         last_num += 1
     trapping_colors = ["red", "coral", "tomato", "salmon", "sienna"]
     for i in range(num_of_trapped):
         voltages[f"TRAPPING_{i}" if num_of_trapped > 1 else "TRAPPING"] = last_num + 1
-        color_descript[last_num + 1] = (trapping_colors[i], f"Trapping electrode {i+1}")
+        color_descript[last_num + 1] = (trapping_colors[i % len(trapping_colors)], f"Trapping electrode {i+1}")
         adjust_dict[last_num + 1] = 1
         last_num += 1
     DynamicEnum = Voltages(f"VoltagesC{num_of_compensated}T{num_of_trapped}", voltages)
