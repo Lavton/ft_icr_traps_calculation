@@ -15,6 +15,7 @@ class DHCTrap(CylindricalTrap):
         This happens when 2*z^2 - r^2 >= 2*z0^2 - R^2
         """
         r, theta, z = coords
+        # z *= 1.05 # for 3D visualization with expanding
         if 2 * z ** 2 - (r ** 2) >= 2 * self.trap_border.z ** 2 - self.trap_border.x ** 2:
             return True
         else:

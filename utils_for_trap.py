@@ -11,6 +11,20 @@ from traps.abstract_trap import AbstractTrap, Coords
 AVERAGED_AREA_LENGTH = 10 * 10 ** -3
 
 
+def get_electrodes_slice(trap: AbstractTrap):
+    electrodes_and_types = []
+    for k, z in tqdm(enumerate(trap.grid.z), total=trap.model_lenghts.z):
+        for i, x in [(0, 0)]:
+            for j, y in enumerate(trap.grid.y):
+                # for each point in model space:
+                if trap.pa.electrode(i, j, k):
+                    electrodes_and_types.append(((x, y, z), trap.pa.potential_real(i, j, k)))
+                    electrodes_and_types.append(((x, -y, z), trap.pa.potential_real(i, -j, k)))
+                    electrodes_and_types.append(((x, y, -z), trap.pa.potential_real(i, j, -k)))
+                    electrodes_and_types.append(((x, -y, -z), trap.pa.potential_real(i, -j, -k)))
+    return electrodes_and_types
+
+
 def get_averaged_phi(trap: AbstractTrap, r_pts=50, z_pts=50, max_r=AVERAGED_AREA_LENGTH, max_z=AVERAGED_AREA_LENGTH):
     """return 2D numpy array of electric potential from .pa file, averaged over angle in cylindical coordinate system"""
     # grid points of averaging

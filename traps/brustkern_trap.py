@@ -11,7 +11,6 @@ class BrustkernTrap(CylindricalTrap):
     _voltages = _Voltages
 
     def __init__(self, a: float, pa_file_name="test", pts=150):
-        D = 2*a
         article_r = 31.24
         ext_det = 21.87 * a / article_r
         gap_size = 0.51 * a / article_r

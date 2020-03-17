@@ -1,3 +1,5 @@
+from matplotlib.pyplot import imshow
+
 from traps import abstract_trap
 from typing import Set, Tuple, Optional, Callable
 from tqdm import tqdm_notebook as tqdm
@@ -122,8 +124,9 @@ def create_figure(legend, show=False):
     # img.paste(img2.resize(new_szes), (img.size[0] - new_szes[0], img.size[1] - new_szes[1]))
     # d.text((img.size[0] - 120, img.size[1] - new_szes[1] + 30), "original trap",
     #        font=ImageFont.truetype("arial.ttf", 15), fill=(0, 0, 0))
+    im_name = "trap.png"
+    img.save(im_name)
     if show:
-        img.show()
-    img.save("trap.png")
+        imshow(img)
 
 

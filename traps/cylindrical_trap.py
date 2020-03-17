@@ -24,8 +24,8 @@ class CylindricalTrap(AbstractPenningTrapWithSimpleElectrodes):
             return TrappedVoltages.EXCITATION
         return TrappedVoltages.DETECTION
 
-    def __init__(self, z0: float, a: float, pa_file_name="test", model_border=None, *, pts=150):
-        super().__init__(Coords(x=a, y=a, z=z0), pa_file_name=pa_file_name, pts=pts, cylindrical_geometry=True, model_border=model_border)
+    def __init__(self, z0: float, a: float, pa_file_name="test", model_border=None, electrode_width=1.6, *, pts=150):
+        super().__init__(Coords(x=a, y=a, z=z0), pa_file_name=pa_file_name, pts=pts, cylindrical_geometry=True, model_border=model_border, electrode_width=electrode_width)
 
     def new_adjust_rule(self, voltage):
         if voltage.value == TrappedVoltages.EXCITATION.value:

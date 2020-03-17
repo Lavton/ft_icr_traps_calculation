@@ -43,9 +43,9 @@ class TrappedVoltages(Voltages):
 
     def _color_for_3d(self, voltage) -> Tuple[str, str]:
         if voltage.value == self.EXCITATION.value:
-            return "green", "Detection electrode"
+            return (0, 1, 0), "Detection electrode"
         if voltage.value == self.DETECTION.value:
-            return "blue", "Excitation electrode"
+            return (0, 0.5, 1), "Excitation electrode"
         if voltage.value == self.TRAPPING.value:
             return "red", "Trapping electrode"
 
@@ -68,9 +68,9 @@ class CompensatedVoltages(Voltages):
 
     def _color_for_3d(self, voltage) -> Tuple[str, str]:
         if voltage.value == CompensatedVoltages.EXCITATION.value:
-            return "green", "Detection electrode"
+            return (0, 1, 0), "Detection electrode"
         if voltage.value == CompensatedVoltages.DETECTION.value:
-            return "blue", "Excitation electrode"
+            return (0, 0.5, 1), "Excitation electrode"
         if voltage.value == CompensatedVoltages.TRAPPING.value:
             return "red", "Trapping electrode"
         if voltage.value == CompensatedVoltages.COMPENSATED.value:
@@ -95,9 +95,9 @@ class TrappedVoltages2(Voltages):
 
     def _color_for_3d(self, voltage) -> Tuple[str, str]:
         if voltage.value == TrappedVoltages2.EXCITATION.value:
-            return "green", "Detection electrode"
+            return (0, 1, 0), "Detection electrode"
         if voltage.value == TrappedVoltages2.DETECTION.value:
-            return "blue", "Excitation electrode"
+            return (0, 0.5, 1), "Excitation electrode"
         if voltage.value == TrappedVoltages2.TRAPPING.value:
             return "red", "Trapping electrode"
         if voltage.value == TrappedVoltages2.TRAPPING_B.value:
@@ -111,8 +111,8 @@ def gen_voltage_enum(num_of_compensated=0, num_of_trapped=0):
         "DETECTION": 2
     }
     color_descript = {
-        1: ("green", "Detection electrode"),
-        2: ("blue", "Excitation electrode")
+        1: ((0, 1, 0), "Detection electrode"),
+        2: ((0, 0.5, 1), "Excitation electrode")
     }
     adjust_dict = {
         1: 0,

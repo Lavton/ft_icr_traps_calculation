@@ -194,20 +194,24 @@ class AbstractTrap(metaclass=ABCMeta):
         """you can use some other adjust rule for each trap. To do it re-define this method"""
         return voltage.to_adjust()
 
+    def get_voltage_for_adj(self, t, adjust_rule: typing.Optional[typing.Callable] = None) -> float:
+        outher_rule_pot = None
+        if adjust_rule is not None:
+            outher_rule_pot = adjust_rule(t)
+        inner_rule_pot = self.new_adjust_rule(t)
+        if outher_rule_pot is not None:
+            potential = outher_rule_pot
+        elif inner_rule_pot is not None:
+            potential = inner_rule_pot
+        else:
+            potential = t.to_adjust()
+        return potential
+
     def adjust_trap(self, adjust_rule: typing.Optional[typing.Callable] = None):
         """adjust the trap. Using the given rule ore the inner rule or the common rule"""
         voltages = []
         for t in self._voltages:
-            outher_rule_pot = None
-            if adjust_rule is not None:
-                outher_rule_pot = adjust_rule(t)
-            inner_rule_pot = self.new_adjust_rule(t)
-            if outher_rule_pot is not None:
-                potential = outher_rule_pot
-            elif inner_rule_pot is not None:
-                potential = inner_rule_pot
-            else:
-                potential = t.to_adjust()
+            potential = self.get_voltage_for_adj(t, adjust_rule)
             voltages.append(f"{t.value}={potential}")
         voltages = ",".join(voltages)
         print(voltages)

@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import shutil
 import os
+
+import utils_for_trap
 from traps import abstract_trap
 _A_20_COMPARABLE = 4320.840
 _R_CLOUD = 2*10**-3
@@ -125,25 +127,53 @@ def _plot_2_lines(Rs, Zs, Phi, Phi20, position, color, axis: str, str_repr, plt)
     _plot_1_line(coord, Phi20, Phi, position, plt, _axes, linestyle="--", label=f"$approx(\phi({axis}={str_repr}))$", color=color)
 
 
-def plot_contour(Rs, Zs, Phi, trap, number=10, mode="half"):
+def plot_contour(Rs, Zs, Phi, trap):
+    # https://stackoverflow.com/questions/57530042/matplotlib-let-color-bar-not-affect-size-and-proportions-of-the-plot
     colorinterpolation = 200
     colourMap = plt.cm.plasma
+    from matplotlib import rcParams
+    my_dpi = 70
+    rcParams['figure.figsize'] = (np.max(Zs) / np.max(Rs) *1.2) * 400/my_dpi, 400/my_dpi
+    rcParams['figure.dpi'] = my_dpi
+    electrodes_and_types = utils_for_trap.get_electrodes_slice(trap)
+    e_colors = dict()
+    electrodes = dict()
+    _accuracy = 1e-3
+    max_z = np.max(Zs)
+    for (x, y, z), c in electrodes_and_types:
+        for v in trap._voltages:
+            real_volt = trap.get_voltage_for_adj(v)
+            if c - _accuracy <= real_volt <= c + _accuracy:
+                if real_volt not in e_colors:
+                    e_colors[real_volt] = v.colors_for_3d()[v.value]
+                    electrodes[real_volt] = []
+                electrodes[real_volt].append((y, z))
+    # l = 0
     l = Rs.shape[0] // 2 + 1
-    if mode=="half":
-        CS = plt.contourf(Zs[:l, :], Rs[:l, :], Phi[:l, :], colorinterpolation, cmap=colourMap)
-    if mode=="full":
-        CS = plt.contourf(Zs[:, :], Rs[:, :], Phi[:, :], colorinterpolation, cmap=colourMap)
-    if mode=="quarter":
-        CS = plt.contourf(Zs[:l, :l], Rs[:l, :l], Phi[:l, :l], colorinterpolation, cmap=colourMap)
-    levels = np.linspace(Phi.min(), Phi.max(), number)
+    multipl = 10**3
+    # fig = plt.figure(figsize=(np.max(Zs) / np.max(Rs) * 400/my_dpi, 400/my_dpi))
+    CS = plt.contourf(Zs[:, :]*multipl, Rs[:, :]*multipl, Phi[:, :], colorinterpolation, cmap=colourMap)
+    levels = np.linspace(Phi.min(), Phi.max(), 20)
     modified_l = np.exp((levels / levels[-1])[::-1] * 2) / np.exp(2)
     colors = [(l, l, l) for l in modified_l]
     CS2 = plt.contour(CS, levels=levels, colors=colors)
     cbar = plt.colorbar(CS)
     cbar.add_lines(CS2)
-    plt.savefig("contour.png")
+    for color in e_colors:
+        ys, zs = [], []
+        for y, z in electrodes[color]:
+            ys.append(y*multipl)
+            zs.append(z*multipl)
+        plt.scatter(zs, ys, color=e_colors[color], marker="s", s=1.5)
+    print(max_z)
+    plt.xlabel("z, mm", fontsize=15)
+    plt.ylabel("r, mm", fontsize=15)
+    plt.axis('equal')
+    plt.xlim(-max_z * multipl, max_z * 1.02*multipl)
+
+    plt.savefig("contour.png", dpi=my_dpi)
     shutil.copy("contour.png", f"{_2D_IMAGE_LOCATION}\\{trap.name}_contour.png")
-    shutil.copy("contour.png", f"{_2D_IMAGE_LOCATION}\\{trap.name}_contour_{mode}.png")
+    # shutil.copy("contour.png", f"{_2D_IMAGE_LOCATION}\\{trap.name}_contour_{mode}.png")
 
 
 def combine_copy_delete(trap: abstract_trap.AbstractTrap, copy=True, delete=False, show=False):

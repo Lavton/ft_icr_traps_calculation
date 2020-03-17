@@ -12,7 +12,7 @@ class OpenCompensatedCylindricalTrap(CylindricalTrap):
         self.ze = ze
         self.dzc = dzc
 
-        bigger = 1.1
+        bigger = 1.3
         model_border = Coords[float](
             x=bigger * a,
             y=bigger * a,
